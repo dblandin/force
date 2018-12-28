@@ -21,6 +21,7 @@
     "relay": "node scripts/relayCompiler.js",
     "sentry": "scripts/sentry.sh",
     "start": "scripts/start.sh",
+    "start:nodebug": "NODEBUG=1 scripts/start.sh",
     "start:prod": "NODE_ENV=production node -r dotenv/config --max_old_space_size=1024 ./src --verbose --debugProd",
     "start:relay": "yarn relay && concurrently --raw --kill-others 'yarn relay --watch' 'yarn start'",
     "sync-schema": "rm -rf data && mkdir data && graphql-fetch-schema https://metaphysics-staging.artsy.net -o data",

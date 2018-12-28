@@ -18,7 +18,8 @@ if [ "$NODE_ENV" != "production" ]; then
   OPT+=(-r dotenv/config --preserve-symlinks)
   if [ "$TERM_PROGRAM" == "vscode" ] && \
      [ ! -z "$TERM_PROGRAM_VERSION" ] && \
-     [ $(version $TERM_PROGRAM_VERSION) -ge $(version "1.22.2") ]
+     [ $(version $TERM_PROGRAM_VERSION) -ge $(version "1.22.2") ] && \
+     [ -z "$NODEBUG" ]
   then
     OPT+=(--inspect-brk)
   fi
