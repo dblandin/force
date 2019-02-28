@@ -18,14 +18,25 @@ block body
           #main-header-logo-icon
         a#main-header-menu( href= '#' )
           #main-header-menu-icon
-        form#main-header-search-form( action='/search', method='GET' )
-          input#main-header-search-box(
-            placeholder='Search',
-            name='term',
-            value=mainHeaderSearchBoxValue,
-            type='search'
+        - var lab_features = (sd.CURRENT_USER && sd.CURRENT_USER.lab_features) || []
+        if (lab_features.includes('New Search Bar'))
+          form#main-header-search-form(
+            action='/search'
+            method='GET'
+            itemprop='potentialAction'
+            itemscope
+            itemtype='http://schema.org/SearchAction'
           )
-          button#main-header-search-button.avant-garde-box-button Search
+            != stitch.components.SearchBar()
+        else
+          form#main-header-search-form( action='/search', method='GET' )
+            input#main-header-search-box(
+              placeholder='Search',
+              name='term',
+              value=mainHeaderSearchBoxValue,
+              type='search'
+            )
+            button#main-header-search-button.avant-garde-box-button Search
 
     main
       block content
