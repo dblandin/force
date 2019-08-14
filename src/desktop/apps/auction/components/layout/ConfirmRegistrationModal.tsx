@@ -4,6 +4,11 @@ import { Serif, Button, CheckCircleIcon, Box } from "@artsy/palette"
 import { connect } from "react-redux"
 
 const _ConfirmRegistrationModal = ({ me, modalType, onClose }) => {
+  if (!(me && me.bidders && me.bidders.length)) return null
+
+  const bidder = me.bidders[0]
+  const [modalVisible, setModalVisible] = useState(true)
+
   useEffect(() => {
     const replaceModalTriggerPath = location.pathname.replace(
       "/confirm-registration",
@@ -11,15 +16,18 @@ const _ConfirmRegistrationModal = ({ me, modalType, onClose }) => {
     )
     history.replaceState({}, document.title, replaceModalTriggerPath)
   }, [])
-  if (!(me && me.bidders && me.bidders.length)) return null
 
-  const bidder = me.bidders[0]
-
-  const [modalVisible, setModalVisible] = useState(true)
+  useEffect(
+    () => {
+      if (!modalVisible) {
+        onClose()
+      }
+    },
+    [modalVisible]
+  )
 
   const hideModal = () => {
     setModalVisible(false)
-    onClose()
   }
 
   let Content
