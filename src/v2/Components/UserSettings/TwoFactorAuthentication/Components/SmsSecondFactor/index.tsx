@@ -14,20 +14,20 @@ import request from "superagent"
 import { useSystemContext } from "v2/Artsy"
 
 import { ApiError } from "../../ApiError"
+import { ApiErrorModal } from "../ApiErrorModal"
+import { ConfirmPasswordPrompt } from "../ConfirmPasswordPrompt"
+import { CreateSmsSecondFactor } from "./Mutation/CreateSmsSecondFactor"
 import { DisableSecondFactor } from "../Mutation/DisableSecondFactor"
 import { SmsSecondFactorModal } from "./Modal"
-import { CreateSmsSecondFactor } from "./Mutation/CreateSmsSecondFactor"
 
 import { SmsSecondFactor_me } from "v2/__generated__/SmsSecondFactor_me.graphql"
-import { ApiErrorModal } from "../ApiErrorModal"
-import { DisableFactorConfirmation } from "../DisableFactorConfirmation"
 
 interface SmsSecondFactorProps extends BorderBoxProps {
   me: SmsSecondFactor_me
   relayRefetch?: RelayRefetchProp
 }
 
-export const SmsSecondFactor: React.FC<SmsSecondFactorProps> = props => {
+export const SmsSecondFactor: React.FC<SmsSecondFactorProps> = (props) => {
   const { me, relayRefetch } = props
   const { relayEnvironment } = useSystemContext()
   const [showConfirmDisable, setShowConfirmDisable] = useState(false)
@@ -90,7 +90,7 @@ export const SmsSecondFactor: React.FC<SmsSecondFactorProps> = props => {
     setCreating(false)
   }
 
-  async function disableSecondFactor() {
+  async function disableSecondFactor(password) {
     if (me.smsSecondFactors[0].__typename !== "SmsSecondFactor") {
       return
     }
@@ -101,6 +101,7 @@ export const SmsSecondFactor: React.FC<SmsSecondFactorProps> = props => {
     try {
       await DisableSecondFactor(relayEnvironment, {
         secondFactorID: me.smsSecondFactors[0].internalID,
+        password: password,
       })
 
       relayRefetch.refetch({}, {}, () => {
@@ -112,7 +113,7 @@ export const SmsSecondFactor: React.FC<SmsSecondFactorProps> = props => {
     }
   }
 
-  const DisableButton = props => (
+  const DisableButton = (props) => (
     <Button
       onClick={() => setShowConfirmDisable(true)}
       variant="secondaryOutline"
@@ -124,7 +125,7 @@ export const SmsSecondFactor: React.FC<SmsSecondFactorProps> = props => {
     </Button>
   )
 
-  const SetupButton = props => (
+  const SetupButton = (props) => (
     <Button
       onClick={createSecondFactor}
       loading={isCreating}
@@ -150,26 +151,26 @@ export const SmsSecondFactor: React.FC<SmsSecondFactorProps> = props => {
         </Flex>
         <Flex mt={[3, 0]} flexDirection={["column", "row"]} alignItems="center">
           {me.smsSecondFactors.length &&
-            me.smsSecondFactors[0].__typename === "SmsSecondFactor" ? (
-              <>
-                <Sans color="black60" size="3" weight="medium">
-                  {me.smsSecondFactors[0].formattedPhoneNumber}
-                </Sans>
-                <DisableButton width={["100%", "auto"]} ml={[0, 1]} mt={[1, 0]} />
-                <SetupButton
-                  width={["100%", "auto"]}
-                  ml={[0, 1]}
-                  mt={[1, 0]}
-                  variant="secondaryGray"
-                >
-                  Edit
+          me.smsSecondFactors[0].__typename === "SmsSecondFactor" ? (
+            <>
+              <Sans color="black60" size="3" weight="medium">
+                {me.smsSecondFactors[0].formattedPhoneNumber}
+              </Sans>
+              <DisableButton width={["100%", "auto"]} ml={[0, 1]} mt={[1, 0]} />
+              <SetupButton
+                width={["100%", "auto"]}
+                ml={[0, 1]}
+                mt={[1, 0]}
+                variant="secondaryGray"
+              >
+                Edit
               </SetupButton>
-              </>
-            ) : (
-              <SetupButton width={["100%", "auto"]} ml={[0, 1]} mt={[1, 0]}>
-                Set up
-              </SetupButton>
-            )}
+            </>
+          ) : (
+            <SetupButton width={["100%", "auto"]} ml={[0, 1]} mt={[1, 0]}>
+              Set up
+            </SetupButton>
+          )}
         </Flex>
       </Flex>
       <SmsSecondFactorModal
@@ -183,10 +184,12 @@ export const SmsSecondFactor: React.FC<SmsSecondFactorProps> = props => {
         show={!!apiErrors.length}
         errors={apiErrors}
       />
-      <DisableFactorConfirmation
+      <ConfirmPasswordPrompt
+        title="Disable 2FA Method"
+        action="Disable"
         show={showConfirmDisable}
-        onConfirm={disableSecondFactor}
-        onCancel={() => setShowConfirmDisable(false)}
+        onComplete={(password) => disableSecondFactor(password)}
+        onClose={() => setShowConfirmDisable(false)}
       />
       <Modal
         title="Set up with text message"

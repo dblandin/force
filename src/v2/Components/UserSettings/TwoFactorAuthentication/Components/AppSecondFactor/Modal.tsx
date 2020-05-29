@@ -32,7 +32,9 @@ interface AppSecondFactorModalProps {
   secondFactor: CreateAppSecondFactorMutationResponse["createAppSecondFactor"]["secondFactorOrErrors"]
 }
 
-export const AppSecondFactorModal: React.FC<AppSecondFactorModalProps> = props => {
+export const AppSecondFactorModal: React.FC<AppSecondFactorModalProps> = (
+  props
+) => {
   const { secondFactor, onComplete } = props
   const { relayEnvironment } = useSystemContext()
 
@@ -50,7 +52,7 @@ export const AppSecondFactorModal: React.FC<AppSecondFactorModalProps> = props =
 
     let statusMessage = ""
 
-    errors.forEach(error => {
+    errors.forEach((error) => {
       if (error.code === "invalid_otp") {
         actions.setFieldError("code", error.message)
       } else {
@@ -153,14 +155,14 @@ const InnerForm: React.FC<InnerFormProps> = ({
             {secondFactor.otpSecret}
           </Sans>
         ) : (
-            <Button
-              size="small"
-              variant="secondaryGray"
-              onClick={() => setShowSecret(true)}
-            >
-              Show secret
-            </Button>
-          )}
+          <Button
+            size="small"
+            variant="secondaryGray"
+            onClick={() => setShowSecret(true)}
+          >
+            Show secret
+          </Button>
+        )}
       </Box>
       <Sans mt={2} color="black60" size="3">
         2. Enter the six-digit code from the application to complete the

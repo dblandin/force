@@ -13,12 +13,13 @@ import { RelayRefetchProp, createFragmentContainer, graphql } from "react-relay"
 import request from "superagent"
 
 import { useSystemContext } from "v2/Artsy"
-import { AppSecondFactorModal } from "./Modal"
+
 import { ApiError } from "../../ApiError"
 import { ApiErrorModal } from "../ApiErrorModal"
-import { DisableSecondFactor } from "../Mutation/DisableSecondFactor"
+import { AppSecondFactorModal } from "./Modal"
+import { ConfirmPasswordPrompt } from "../ConfirmPasswordPrompt"
 import { CreateAppSecondFactor } from "./Mutation/CreateAppSecondFactor"
-import { DisableFactorConfirmation } from "../DisableFactorConfirmation"
+import { DisableSecondFactor } from "../Mutation/DisableSecondFactor"
 
 import { AppSecondFactor_me } from "v2/__generated__/AppSecondFactor_me.graphql"
 
@@ -27,7 +28,7 @@ interface AppSecondFactorProps extends BorderBoxProps {
   relayRefetch?: RelayRefetchProp
 }
 
-export const AppSecondFactor: React.FC<AppSecondFactorProps> = props => {
+export const AppSecondFactor: React.FC<AppSecondFactorProps> = (props) => {
   const { me, relayRefetch } = props
   const [apiErrors, setApiErrors] = useState<ApiError[]>([])
   const [showConfirmDisable, setShowConfirmDisable] = useState(false)
@@ -88,7 +89,7 @@ export const AppSecondFactor: React.FC<AppSecondFactorProps> = props => {
     setCreating(false)
   }
 
-  async function disableSecondFactor() {
+  async function disableSecondFactor(password) {
     setShowConfirmDisable(false)
     setDisabling(true)
 
@@ -99,6 +100,7 @@ export const AppSecondFactor: React.FC<AppSecondFactorProps> = props => {
     try {
       await DisableSecondFactor(relayEnvironment, {
         secondFactorID: me.appSecondFactors[0].internalID,
+        password: password,
       })
       relayRefetch.refetch({}, {}, () => {
         setDisabling(false)
@@ -109,7 +111,7 @@ export const AppSecondFactor: React.FC<AppSecondFactorProps> = props => {
     }
   }
 
-  const DisableButton = props => (
+  const DisableButton = (props) => (
     <Button
       onClick={() => setShowConfirmDisable(true)}
       variant="secondaryOutline"
@@ -121,7 +123,7 @@ export const AppSecondFactor: React.FC<AppSecondFactorProps> = props => {
     </Button>
   )
 
-  const SetupButton = props => (
+  const SetupButton = (props) => (
     <Button
       onClick={createSecondFactor}
       loading={isCreating}
@@ -153,26 +155,26 @@ export const AppSecondFactor: React.FC<AppSecondFactorProps> = props => {
         </Flex>
         <Flex mt={[3, 0]} flexDirection={["column", "row"]} alignItems="center">
           {me.appSecondFactors.length &&
-            me.appSecondFactors[0].__typename === "AppSecondFactor" ? (
-              <>
-                <Sans color="black60" size="3" weight="medium">
-                  {me.appSecondFactors[0].name || "Unnamed"}
-                </Sans>
-                <DisableButton width={["100%", "auto"]} ml={[0, 1]} mt={[1, 0]} />
-                <SetupButton
-                  width={["100%", "auto"]}
-                  ml={[0, 1]}
-                  mt={[1, 0]}
-                  variant="secondaryGray"
-                >
-                  Edit
+          me.appSecondFactors[0].__typename === "AppSecondFactor" ? (
+            <>
+              <Sans color="black60" size="3" weight="medium">
+                {me.appSecondFactors[0].name || "Unnamed"}
+              </Sans>
+              <DisableButton width={["100%", "auto"]} ml={[0, 1]} mt={[1, 0]} />
+              <SetupButton
+                width={["100%", "auto"]}
+                ml={[0, 1]}
+                mt={[1, 0]}
+                variant="secondaryGray"
+              >
+                Edit
               </SetupButton>
-              </>
-            ) : (
-              <SetupButton width={["100%", "auto"]} ml={[0, 1]} mt={[1, 0]}>
-                Set up
-              </SetupButton>
-            )}
+            </>
+          ) : (
+            <SetupButton width={["100%", "auto"]} ml={[0, 1]} mt={[1, 0]}>
+              Set up
+            </SetupButton>
+          )}
         </Flex>
       </Flex>
       <AppSecondFactorModal
@@ -186,10 +188,12 @@ export const AppSecondFactor: React.FC<AppSecondFactorProps> = props => {
         show={!!apiErrors.length}
         errors={apiErrors}
       />
-      <DisableFactorConfirmation
+      <ConfirmPasswordPrompt
+        title="Disable 2FA Method"
+        action="Disable"
         show={showConfirmDisable}
-        onConfirm={disableSecondFactor}
-        onCancel={() => setShowConfirmDisable(false)}
+        onComplete={(password) => disableSecondFactor(password)}
+        onClose={() => setShowConfirmDisable(false)}
       />
       <Modal
         title="Set up with app"
